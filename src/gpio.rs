@@ -13,23 +13,6 @@ pub trait GpioExt {
     fn split(self) -> Self::Parts;
 }
 
-impl GpioExt for pac::GPIO {
-    type Parts = Parts;
-
-    fn split(self) -> Self::Parts {
-        Self::Parts {
-            pa0: PA0 {
-                i: 0,
-                _mode: PhantomData,
-            },
-            pb7: PB7 {
-                i: 7,
-                _mode: PhantomData,
-            },
-        }
-    }
-}
-
 pub struct Floating;
 pub struct PullDown;
 pub struct PullUp;
@@ -44,52 +27,6 @@ pub struct Output<MODE> {
     _mode: PhantomData<MODE>,
 }
 
-pub struct PA0<MODE> {
-    i: u8,
-    _mode: PhantomData<MODE>,
-}
-
-impl <MODE> OutputPin for PA0<Output<MODE>> {
-    type Error = Infallible;
-    fn set_low(&mut self) -> Result<(), Self::Error> {
-        #[allow(unsafe_code)]
-        unsafe {
-            (*pac::GPIO::ptr()).pa_doutset.write(|w| w.bits(1 << self.i))
-        };
-        Ok(())
-    }
-    fn set_high(&mut self) -> Result<(), Self::Error> {
-        #[allow(unsafe_code)]
-        unsafe {
-            (*pac::GPIO::ptr()).pa_doutclr.write(|w| w.bits(1 << self.i))
-        };
-        Ok(())
-    }
-}
-
-pub struct PB7<MODE> {
-    i: u8,
-    _mode: PhantomData<MODE>,
-}
-
-impl <MODE> OutputPin for PB7<Output<MODE>> {
-    type Error = Infallible;
-    fn set_low(&mut self) -> Result<(), Self::Error> {
-        #[allow(unsafe_code)]
-        unsafe {
-            (*pac::GPIO::ptr()).pb_doutset.write(|w| w.bits(1 << self.i))
-        };
-        Ok(())
-    }
-    fn set_high(&mut self) -> Result<(), Self::Error> {
-        #[allow(unsafe_code)]
-        unsafe {
-            (*pac::GPIO::ptr()).pb_doutclr.write(|w| w.bits(1 << self.i))
-        };
-        Ok(())
-    }
-}
-
 #[derive(Debug, PartialEq)]
 pub enum Edge {
     Rising,
@@ -97,7 +34,55 @@ pub enum Edge {
     RisingFalling,
 }
 
-pub struct Parts {
-    pub pa0: PA0<Output<PushPull>>,
-    pub pb7: PB7<Output<PushPull>>,
+macro_rules! gpio {
+    ($GPIO:ident, $gpiox:ident, $PXx:ident, [
+        $($PXi:ident: ($pxi:ident, $i:expr, $MODE:ty, $set:ident, $clr:ident),)+
+    ]) => {
+        pub struct Parts {
+            $(
+                pub $pxi: $PXi<$MODE>,
+            )+
+        }
+
+        impl GpioExt for pac::GPIO {
+            type Parts = Parts;
+
+            fn split(self) -> Self::Parts {
+                Self::Parts {
+                    $(
+                        $pxi: $PXi { _mode: PhantomData },
+                    )+
+                }
+            }
+        }
+
+        $(
+            pub struct $PXi<MODE> {
+                _mode: PhantomData<MODE>,
+            }
+            impl <MODE> OutputPin for $PXi<Output<MODE>> {
+                type Error = Infallible;
+                fn set_low(&mut self) -> Result<(), Self::Error> {
+                    #[allow(unsafe_code)]
+                    unsafe {
+                        (*pac::GPIO::ptr()).$set.write(|w| w.bits(1 << $i))
+                    };
+                    Ok(())
+                }
+                fn set_high(&mut self) -> Result<(), Self::Error> {
+                    #[allow(unsafe_code)]
+                    unsafe {
+                        (*pac::GPIO::ptr()).$clr.write(|w| w.bits(1 << $i))
+                    };
+                    Ok(())
+                }
+            }
+
+        )+
+    }
 }
+
+gpio!(GPIO, gpio, PXx, [
+    PA0: (pa0, 0, Output<PushPull>, pa_doutset, pa_doutclr),
+    PB7: (pb7, 7, Output<PushPull>, pb_doutset, pb_doutclr),
+]);
