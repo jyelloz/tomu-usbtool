@@ -35,7 +35,7 @@ pub enum Edge {
 }
 
 macro_rules! gpio {
-    ($GPIO:ident, $gpiox:ident, $PXx:ident, [
+    ($gpiox:ident, $PXx:ident, [
         $($PXi:ident: ($pxi:ident, $i:expr, $MODE:ty, $set:ident, $clr:ident),)+
     ]) => {
         pub struct Parts {
@@ -82,7 +82,7 @@ macro_rules! gpio {
     }
 }
 
-gpio!(GPIO, gpio, PXx, [
+gpio!(gpio, PXx, [
     PA0: (pa0, 0, Output<PushPull>, pa_doutset, pa_doutclr),
     PB7: (pb7, 7, Output<PushPull>, pb_doutset, pb_doutclr),
 ]);
