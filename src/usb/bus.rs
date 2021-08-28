@@ -2,7 +2,10 @@ pub use usb_device::bus::UsbBus;
 use usb_device::{
     UsbDirection,
     Result as UsbResult,
-    bus::PollResult,
+    bus::{
+        UsbBusAllocator,
+        PollResult,
+    },
     endpoint::{
         EndpointAddress,
         EndpointType,
@@ -30,12 +33,13 @@ impl USB {
         usb: pac::USB,
         pin_dm: PC14<Output<PushPull>>,
         pin_dp: PC15<Output<PushPull>>,
-    ) -> Self {
-        Self {
+    ) -> UsbBusAllocator<Self> {
+        let bus = Self {
             _usb: usb,
             _pin_dm: pin_dm,
             _pin_dp: pin_dp,
-        }
+        };
+        UsbBusAllocator::new(bus)
     }
 }
 
