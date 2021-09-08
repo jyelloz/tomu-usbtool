@@ -7,7 +7,10 @@ use paste::paste;
 
 use crate::pac;
 
-pub use crate::hal::digital::v2::OutputPin;
+pub use crate::hal::digital::v2::{
+    OutputPin,
+    ToggleableOutputPin,
+};
 
 pub trait GpioExt {
     type Parts;
@@ -94,6 +97,16 @@ macro_rules! gpio {
                         #[allow(unsafe_code)]
                         unsafe {
                             (*pac::GPIO::ptr()).[<p $bank _doutclr>].write(|w| w.bits(1 << $i))
+                        };
+                        Ok(())
+                    }
+                }
+                impl <MODE> ToggleableOutputPin for $PXi<Output<MODE>> {
+                    type Error = Infallible;
+                    fn toggle(&mut self) -> Result<(), Self::Error> {
+                        #[allow(unsafe_code)]
+                        unsafe {
+                            (*pac::GPIO::ptr()).[<p $bank _douttgl>].write(|w| w.bits(1 << $i))
                         };
                         Ok(())
                     }
