@@ -26,6 +26,7 @@ use embedded_hal as hal;
 #[allow(dead_code)]
 mod pac;
 mod gpio;
+mod dsp_filter;
 
 pub use efm32hg_usbd::{
     USBCore as Efm32USB,
