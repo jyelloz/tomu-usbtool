@@ -198,7 +198,7 @@ impl Capsense {
             tx.write(CapsenseData(*channels)).ok();
         }
         *active_channel = active_channel.next();
-        &*channels
+        channels
     }
 
 }
