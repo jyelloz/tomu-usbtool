@@ -27,6 +27,7 @@ use embedded_hal as hal;
 mod pac;
 mod gpio;
 mod wdog;
+mod rtc;
 mod dsp_filter;
 mod capsense;
 
