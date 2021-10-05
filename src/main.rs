@@ -27,6 +27,7 @@ use embedded_hal as hal;
 mod pac;
 mod gpio;
 mod dsp_filter;
+mod capsense;
 
 pub use efm32hg_usbd::{
     USBCore as Efm32USB,
