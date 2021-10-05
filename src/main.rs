@@ -26,6 +26,7 @@ use embedded_hal as hal;
 #[allow(dead_code)]
 mod pac;
 mod gpio;
+mod wdog;
 mod dsp_filter;
 mod capsense;
 
